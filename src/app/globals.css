@@ -18,16 +18,25 @@
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 }
 
-html {
-  scroll-behavior: smooth;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-ink-950);
+    color: var(--color-mist-200);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
-body {
-  background: var(--color-ink-950);
-  color: var(--color-mist-200);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
+/*
+ * These live in the components layer on purpose. Unlayered CSS outranks
+ * everything Tailwind emits, so an unlayered `.btn { display: inline-flex }`
+ * would quietly beat `md:hidden` on the same element.
+ */
+@layer components {
 
 /* Faint grid, like graph paper under the whole store. */
 .bg-grid {
@@ -90,4 +99,6 @@ body {
 }
 .field::placeholder {
   color: color-mix(in oklab, var(--color-mist-400) 65%, transparent);
+}
+
 }
