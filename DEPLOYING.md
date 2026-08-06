@@ -1,5 +1,38 @@
 # Deploying Pepmarket
 
+## Just want a link you can send someone?
+
+If the goal is showing the site to a person today — not launching — you don't
+need to deploy anything. A tunnel puts your local dev server on a public HTTPS
+URL in one command.
+
+```bash
+npm run dev                                   # terminal 1
+cloudflared tunnel --url http://localhost:3000  # terminal 2
+```
+
+Install `cloudflared` first: `brew install cloudflared` on macOS, or grab a
+binary from Cloudflare's releases page. No account, no signup — it prints a
+`https://something-random.trycloudflare.com` URL that anyone can open.
+
+What this is and isn't:
+
+- The link only works while both commands are running. Close the terminal or
+  shut your laptop and it dies. The URL is different every time.
+- Traffic goes to *your machine*. Fine for a demo, not for customers.
+- Referral links adapt automatically. The dashboard builds them from the origin
+  the browser is actually on, so they show the tunnel URL, not localhost — the
+  whole referral flow is demonstrable over the link.
+
+**Turn off the demo admin token before you share a tunnel.** `/admin` falls back
+to `dev-admin` in development, so anyone with your link can open
+`/admin?token=dev-admin` and read every order and affiliate. Either set a real
+`ADMIN_TOKEN` in `.env.local` first, or only tunnel a database with demo data
+in it.
+
+When you want a link that stays up with your laptop closed, that's a real
+deploy — the rest of this document.
+
 ## Read this first: payments, not hosting, is the hard part
 
 Hosting this app is a one-evening job. Getting paid for peptides is the part
