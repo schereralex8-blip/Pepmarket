@@ -3,17 +3,29 @@
 ## Just want a link you can send someone?
 
 If the goal is showing the site to a person today — not launching — you don't
-need to deploy anything. A tunnel puts your local dev server on a public HTTPS
-URL in one command.
+need to deploy anything:
 
 ```bash
-npm run dev                                   # terminal 1
-cloudflared tunnel --url http://localhost:3000  # terminal 2
+npm run share
 ```
 
-Install `cloudflared` first: `brew install cloudflared` on macOS, or grab a
-binary from Cloudflare's releases page. No account, no signup — it prints a
-`https://something-random.trycloudflare.com` URL that anyone can open.
+That starts the store, opens a Cloudflare quick tunnel in front of it, and
+prints a `https://something-random.trycloudflare.com` link anyone can open.
+Ctrl-C stops both.
+
+It needs `cloudflared`, which is a single binary and no account:
+
+```
+macOS         brew install cloudflared
+Windows       winget install --id Cloudflare.cloudflared
+Linux/other   https://github.com/cloudflare/cloudflared/releases
+```
+
+Already have it somewhere unusual? `CLOUDFLARED=/path/to/cloudflared npm run share`.
+
+The script also mints a private `ADMIN_TOKEN` into `.env.local` the first time
+it runs, because `/admin` otherwise falls back to a value published in this
+repo — see the warning below.
 
 What this is and isn't:
 
@@ -24,11 +36,11 @@ What this is and isn't:
   the browser is actually on, so they show the tunnel URL, not localhost — the
   whole referral flow is demonstrable over the link.
 
-**Turn off the demo admin token before you share a tunnel.** `/admin` falls back
-to `dev-admin` in development, so anyone with your link can open
-`/admin?token=dev-admin` and read every order and affiliate. Either set a real
-`ADMIN_TOKEN` in `.env.local` first, or only tunnel a database with demo data
-in it.
+**On the admin token.** `/admin` falls back to `dev-admin` in development, and
+a tunnel is public — so without a real token, anyone holding your link can read
+every order and affiliate. `npm run share` generates one into `.env.local`
+automatically and prints the admin URL with it. If you tunnel by hand instead,
+set `ADMIN_TOKEN` yourself first.
 
 When you want a link that stays up with your laptop closed, that's a real
 deploy — the rest of this document.

@@ -44,6 +44,17 @@ appears and follows you into the cart.
 Delete `data/pepmarket.db` to reset everything; edit `src/lib/seed-products.ts`
 to change the starting catalog.
 
+### Showing it to someone else
+
+```bash
+npm run share
+```
+
+Starts the store behind a Cloudflare quick tunnel and prints a public HTTPS
+link. Needs `cloudflared` installed (`brew install cloudflared`, or see
+[DEPLOYING.md](./DEPLOYING.md)). The link is temporary and points at your
+machine — for demos, not customers.
+
 ### Configuration
 
 None is needed for local development. For production, copy `.env.example` to

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "demo": "node scripts/demo.mjs"
+    "demo": "node scripts/demo.mjs",
+    "share": "node scripts/share.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
