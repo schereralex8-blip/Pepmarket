@@ -130,5 +130,23 @@ function connect(): Database.Database {
 // Next.js hot-reloads modules in dev; keep one connection on globalThis so we
 // don't leak file handles across reloads.
 const globalForDb = globalThis as unknown as { __pepmarketDb?: Database.Database };
-export const db: Database.Database = globalForDb.__pepmarketDb ?? connect();
-if (process.env.NODE_ENV !== "production") globalForDb.__pepmarketDb = db;
+
+function getDb(): Database.Database {
+  if (!globalForDb.__pepmarketDb) globalForDb.__pepmarketDb = connect();
+  return globalForDb.__pepmarketDb;
+}
+
+/**
+ * Lazy on purpose. Connecting at module load meant that merely importing this
+ * file — which `next build` does when it collects page data — created and
+ * seeded the database, with several build workers racing to do it at once.
+ * Behind this proxy the first connection happens on the first real query, so
+ * builds never touch the disk and stay reproducible.
+ */
+export const db: Database.Database = new Proxy({} as Database.Database, {
+  get(_target, prop, receiver) {
+    const database = getDb();
+    const value = Reflect.get(database, prop, receiver);
+    return typeof value === "function" ? value.bind(database) : value;
+  },
+});

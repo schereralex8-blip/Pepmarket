@@ -1,0 +1,30 @@
+# Fly.io deployment. Rename the app before the first deploy — app names are
+# globally unique across Fly.
+app = "pepmarket"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  DATABASE_PATH = "/data/pepmarket.db"
+
+# The SQLite file lives on this volume. Create it once with:
+#   fly volumes create pepmarket_data --size 1 --region iad
+[[mounts]]
+  source = "pepmarket_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # SQLite means one writer: keep a single machine and do not autoscale it.
+  # Outgrow that and you migrate to Postgres, not to more machines.
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

@@ -83,6 +83,14 @@ Also worth doing before launch: rate-limit the sign-up and login routes, move
 `/admin` behind real auth, and put the SQLite file on persistent disk (set
 `DATABASE_PATH`) — or migrate to Postgres if you outgrow it.
 
+## Deploying
+
+See [DEPLOYING.md](./DEPLOYING.md). Short version: this app keeps its data in a
+SQLite file, so it needs a host with a persistent disk — Fly.io, Railway,
+Render, or a VPS — and not a serverless platform. A `Dockerfile` and `fly.toml`
+are included. Read the payments section of that document before you buy
+anything; it is the part that actually blocks launches in this category.
+
 ## Compliance
 
 The catalog is written and sold as **research chemicals for laboratory use only,
