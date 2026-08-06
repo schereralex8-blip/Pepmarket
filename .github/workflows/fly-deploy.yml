@@ -1,0 +1,36 @@
+name: Deploy to Fly.io
+
+# Deploys on every push to the default branch. Set up once:
+#
+#   1. Create the app and volume locally — scripts/deploy-fly.sh does this
+#      (or `fly launch --no-deploy` and `fly volumes create`).
+#   2. Mint a deploy token:  fly tokens create deploy -x 999999h
+#   3. Add it to this repository under
+#      Settings → Secrets and variables → Actions → New repository secret
+#      named FLY_API_TOKEN.
+#
+# The token stays in GitHub. It is never needed anywhere else.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  # SQLite means one writer and one machine; overlapping deploys would fight.
+  group: fly-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # --remote-only builds on Fly's builders, so this runner needs no Docker.
+      - run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

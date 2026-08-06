@@ -26,6 +26,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
+# Container runtimes set HOSTNAME to the container ID, and the standalone
+# server binds to whatever HOSTNAME says — which would leave it unreachable
+# from outside. Pin it.
+ENV HOSTNAME=0.0.0.0
 # Where the SQLite file lives. Mount a persistent volume here.
 ENV DATABASE_PATH=/data/pepmarket.db
 

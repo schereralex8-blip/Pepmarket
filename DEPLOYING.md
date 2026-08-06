@@ -97,24 +97,58 @@ gets. Don't let anyone talk you out of it early.
 ## Deploying to Fly.io
 
 ```bash
-# once
-curl -L https://fly.io/install.sh | sh
-fly auth signup
+curl -L https://fly.io/install.sh | sh    # once
+fly auth login                            # opens your browser
 
-# from the repo root
-fly launch --no-deploy            # edit the app name in fly.toml if prompted
+./scripts/deploy-fly.sh
+```
+
+The script does the whole first-time setup: creates the app and the volume,
+generates `SESSION_SECRET` and `ADMIN_TOKEN` and stores them as Fly secrets,
+then deploys. It checks each step before doing it, so re-running it is safe —
+it skips whatever already exists.
+
+Two things before you run it:
+
+- **Change the app name in `fly.toml`.** Fly app names are globally unique and
+  `pepmarket` is almost certainly taken. Pick something like
+  `pepmarket-<yourname>`. The URL becomes `https://<that>.fly.dev`.
+- **It creates billable resources** — one small VM and a 1GB volume, a few
+  dollars a month. It shows you what it will create and waits for a yes.
+
+Save the admin token it prints. It is stored as a Fly secret, so it cannot be
+read back out; if you lose it, set a new one with
+`fly secrets set ADMIN_TOKEN=…`.
+
+The secrets matter: the app deliberately refuses to issue affiliate sessions in
+production without `SESSION_SECRET`, rather than falling back to a development
+value that is published in this repository.
+
+### Prefer to do it by hand
+
+```bash
+fly launch --no-deploy
 fly volumes create pepmarket_data --size 1 --region iad
-
 fly secrets set \
   SESSION_SECRET="$(openssl rand -hex 32)" \
   ADMIN_TOKEN="$(openssl rand -hex 16)"
-
-fly deploy
+fly deploy --remote-only
 ```
 
-`fly secrets set` is the important one — the app refuses to issue affiliate
-sessions in production without `SESSION_SECRET`, deliberately, so that it can
-never fall back to a known development value.
+`--remote-only` builds on Fly's builders, so you don't need Docker locally.
+
+### Deploying automatically on push
+
+`.github/workflows/fly-deploy.yml` deploys every push to `main`. To switch it
+on, once:
+
+```bash
+fly tokens create deploy -x 999999h
+```
+
+Add the printed token to the repository under **Settings → Secrets and
+variables → Actions** as `FLY_API_TOKEN`. It lives in GitHub and is never
+needed anywhere else.
 
 Note `auto_stop_machines = false` in `fly.toml`. SQLite has a single writer, so
 this app runs as exactly one machine. Do not scale it horizontally; if you need
