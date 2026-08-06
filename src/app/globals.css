@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #05080d;
+  --color-ink-900: #0a0f17;
+  --color-ink-850: #0e1521;
+  --color-ink-800: #131c2b;
+  --color-ink-700: #1d283b;
+  --color-ink-600: #2b3a52;
+  --color-mist-400: #8ca0bd;
+  --color-mist-200: #cbd7e8;
+  --color-accent-400: #34e0b0;
+  --color-accent-500: #12c795;
+  --color-accent-600: #0a9f77;
+  --color-signal-400: #6fd2ff;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ink-950);
+  color: var(--color-mist-200);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Faint grid, like graph paper under the whole store. */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(52, 224, 176, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(52, 224, 176, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.card {
+  background: color-mix(in oklab, var(--color-ink-850) 92%, transparent);
+  border: 1px solid var(--color-ink-700);
+  border-radius: 0.875rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.625rem;
+  font-weight: 600;
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--color-accent-500);
+  color: var(--color-ink-950);
+}
+.btn-primary:hover {
+  background: var(--color-accent-400);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  border: 1px solid var(--color-ink-600);
+  color: var(--color-mist-200);
+}
+.btn-ghost:hover {
+  border-color: var(--color-accent-500);
+  color: var(--color-accent-400);
+}
+
+.field {
+  width: 100%;
+  background: var(--color-ink-900);
+  border: 1px solid var(--color-ink-700);
+  border-radius: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  color: var(--color-mist-200);
+  outline: none;
+}
+.field:focus {
+  border-color: var(--color-accent-500);
+  box-shadow: 0 0 0 3px rgba(18, 199, 149, 0.15);
+}
+.field::placeholder {
+  color: color-mix(in oklab, var(--color-mist-400) 65%, transparent);
+}
