@@ -13,19 +13,43 @@ No external services required to run it.
 
 ## Running it
 
+Needs Node 20 or newer. Nothing else — no database server, no API keys, no
+configuration.
+
 ```bash
 npm install
-cp .env.example .env.local     # then fill in SESSION_SECRET and ADMIN_TOKEN
-npm run dev                    # http://localhost:3000
+npm run dev     # http://localhost:3000
 ```
 
-Generate a secret with `openssl rand -hex 32`. In production the app refuses to
-issue affiliate sessions without `SESSION_SECRET` rather than falling back to a
-known dev value.
+That's the whole setup. The database creates and seeds itself at
+`data/pepmarket.db` the first time a page asks for data.
 
-The database creates and seeds itself at `data/pepmarket.db` on first run. Delete
-that file to reset the store; edit `src/lib/seed-products.ts` to change the
-starting catalog.
+To see the affiliate dashboard and admin with realistic numbers in them, load
+the demo data in a second terminal while the dev server is running:
+
+```bash
+npm run demo
+```
+
+That gives you three affiliates, ten orders spread over six weeks, and a
+settled payout. Sign in at `/affiliates/dashboard` with **dana@example.com** /
+**demo1234**, and open admin at `/admin?token=dev-admin`. Re-running it resets
+the demo rows; products are left alone.
+
+Pages worth looking at: `/` · `/products` · `/about` · `/cart` ·
+`/affiliates` · `/affiliates/dashboard` · `/admin?token=dev-admin`. To see the
+referral flow as a customer would, visit `/r/DANAWHIT` — the discount banner
+appears and follows you into the cart.
+
+Delete `data/pepmarket.db` to reset everything; edit `src/lib/seed-products.ts`
+to change the starting catalog.
+
+### Configuration
+
+None is needed for local development. For production, copy `.env.example` to
+`.env.local` and set `SESSION_SECRET` (generate with `openssl rand -hex 32`)
+and `ADMIN_TOKEN`. The app refuses to issue affiliate sessions in production
+without `SESSION_SECRET` rather than falling back to a known development value.
 
 ```bash
 npm run build && npm start     # production
