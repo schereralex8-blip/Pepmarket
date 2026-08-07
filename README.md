@@ -122,9 +122,14 @@ Also worth doing before launch: rate-limit the sign-up and login routes, move
 
 See [DEPLOYING.md](./DEPLOYING.md). Short version: this app keeps its data in a
 SQLite file, so it needs a host with a persistent disk — Fly.io, Railway,
-Render, or a VPS — and not a serverless platform. A `Dockerfile` and `fly.toml`
-are included. Read the payments section of that document before you buy
-anything; it is the part that actually blocks launches in this category.
+Render, or a VPS — and not a serverless platform.
+
+A generic `Dockerfile` runs anywhere. `scripts/deploy-fly.sh` automates the
+whole first-time setup on Fly; `railway.json` configures Railway, which is
+mostly point-and-click. Either works — see the comparison in DEPLOYING.md.
+
+Read the payments section of that document before you buy anything; it is the
+part that actually blocks launches in this category.
 
 ## Compliance
 

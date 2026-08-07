@@ -124,7 +124,7 @@ The secrets matter: the app deliberately refuses to issue affiliate sessions in
 production without `SESSION_SECRET`, rather than falling back to a development
 value that is published in this repository.
 
-### Prefer to do it by hand
+### Prefer to do it by hand on Fly
 
 ```bash
 fly launch --no-deploy
@@ -149,6 +149,59 @@ fly tokens create deploy -x 999999h
 Add the printed token to the repository under **Settings → Secrets and
 variables → Actions** as `FLY_API_TOKEN`. It lives in GitHub and is never
 needed anywhere else.
+
+## Deploying to Railway instead
+
+Nothing here is Fly-specific — Fly is just what the included script automates.
+Railway runs the same `Dockerfile`, and `railway.json` already pins the build
+and health check, so setup is a handful of clicks:
+
+1. **New Project → Deploy from GitHub repo**, and pick this repository.
+   Railway reads `railway.json` and builds the Dockerfile.
+2. **Add a volume.** Open the service → **Variables/Data → Add Volume**, mount
+   path `/data`. Do this *before* you send any real traffic — without it, the
+   database is written into the container filesystem and is silently erased on
+   the next deploy.
+3. **Set variables** on the service:
+
+   ```
+   SESSION_SECRET   a long random string (openssl rand -hex 32)
+   ADMIN_TOKEN      another random string
+   DATABASE_PATH    /data/pepmarket.db
+   ```
+
+   Don't set `PORT` — Railway assigns one and the app reads it.
+4. **Generate a domain** under **Settings → Networking**, or add a custom one
+   and point a CNAME at the target Railway shows you. TLS is automatic.
+
+Railway redeploys on every push to the connected branch, so there is no CI
+workflow to configure — the GitHub Actions file is for Fly only.
+
+**Keep replicas at 1.** `railway.json` sets `numReplicas: 1` deliberately.
+SQLite has a single writer; a second replica gets its own volume and its own
+divergent copy of your orders. If you need more than one instance, migrate to
+Postgres first — Railway makes that easy, and all the database code is confined
+to `src/lib/`.
+
+### Fly or Railway?
+
+Either is fine for this app. Railway has the friendlier UI and you can do the
+whole thing in a browser. Fly is cheaper at small sizes, gives finer control
+over regions and machines, and is fully scriptable — which is why the automated
+setup targets it. Pick whichever you'll actually maintain.
+
+## Health checks
+
+Both platforms watch `/api/health`, which does a real query rather than just
+confirming the process is alive:
+
+```json
+{ "status": "ok", "database": "reachable" }
+```
+
+It returns **503** when the database can't be reached — the exact failure a
+missing or unmounted volume produces. Without that, a broken deploy would keep
+serving pages and quietly drop every order instead of being rolled back.
 
 Note `auto_stop_machines = false` in `fly.toml`. SQLite has a single writer, so
 this app runs as exactly one machine. Do not scale it horizontally; if you need
