@@ -33,7 +33,10 @@ ENV HOSTNAME=0.0.0.0
 # Where the SQLite file lives. Mount a persistent volume here.
 ENV DATABASE_PATH=/data/pepmarket.db
 
-RUN groupadd --system --gid 1001 nodejs \
+# gosu lets the entrypoint drop from root to the app user without forking.
+RUN apt-get update && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 1001 nodejs \
     && useradd --system --uid 1001 --gid nodejs nextjs \
     && mkdir -p /data && chown nextjs:nodejs /data
 
@@ -41,7 +44,14 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-USER nextjs
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 3000
-VOLUME ["/data"]
+
+# No VOLUME instruction: Railway rejects it outright, and both Railway and Fly
+# attach storage through their own configuration instead (a Railway volume, or
+# [[mounts]] in fly.toml). The entrypoint starts as root to fix ownership of
+# whatever gets mounted at /data, then runs the server as `nextjs`.
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "server.js"]

@@ -177,6 +177,18 @@ and health check, so setup is a handful of clicks:
 Railway redeploys on every push to the connected branch, so there is no CI
 workflow to configure — the GitHub Actions file is for Fly only.
 
+Two Railway quirks the Dockerfile already accounts for, so you don't trip over
+them:
+
+- **`VOLUME` is rejected.** Railway fails the build outright with
+  `docker VOLUME at Line N is not supported, use Railway Volumes`. Storage is
+  attached through the dashboard instead, so the Dockerfile carries no `VOLUME`
+  instruction.
+- **Mounted volumes are owned by root**, while the app runs unprivileged. The
+  entrypoint starts as root, takes ownership of the data directory, then drops
+  to the app user via `gosu`. Without that the container would boot happily and
+  fail to write a single order.
+
 **Keep replicas at 1.** `railway.json` sets `numReplicas: 1` deliberately.
 SQLite has a single writer; a second replica gets its own volume and its own
 divergent copy of your orders. If you need more than one instance, migrate to
